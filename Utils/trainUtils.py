@@ -9,3 +9,7 @@ def makeFolder(location):
             if e.errno != errno.EEXIST:
                 raise
     return 0
+
+
+def rmse(y_pred, y_gt):
+    

@@ -154,7 +154,6 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
             y = self(X)
         return y
 
-
 if __name__ == '__main__':
     writer = SummaryWriter()
     loader = DataLoader()
