@@ -13,14 +13,14 @@ def makeFolder(location):
                 raise
     return 0
 
-# def postProcessing(fileName:str):
-#     path = os.path.join(
-#         os.getcwd(),
-#         'Results',
-#         fileName
-#     )
-#     with open(path, 'rb') as f:
-#         results = pickle.load(f)
-#         for key, data in results.items():
-#             print(key, np.sqrt(MSE(data['y_data'], data['y_pred'])) )
-#
+def postProcessing(fileName:str):
+    path = os.path.join(
+        os.getcwd(),
+        'Results',
+        fileName
+    )
+    with open(path, 'rb') as f:
+        results = pickle.load(f)
+        for key, data in results.items():
+            print(key, np.sqrt(MSE(data['y_data'], data['y_pred'])) )
+

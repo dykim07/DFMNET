@@ -180,7 +180,7 @@ if __name__ == '__main__':
             'y_pred': pred.to('cpu').detach().numpy()
         }
 
-    with open(os.path.join(os.getcwd(), 'Results', 'test.pick'), 'wb') as f:
+    with open(os.path.join(os.getcwd(), 'Results', 'tt_test.pick'), 'wb') as f:
         pickle.dump(results, f)
 
 
