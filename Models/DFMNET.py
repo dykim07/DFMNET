@@ -4,40 +4,10 @@ import torch.optim as optim
 from torch.utils.data import DataLoader as torchDataLoader
 import numpy as np
 from tqdm import tqdm
-from sklearn.base import BaseEstimator, RegressorMixin
 
-
-import pickle
-
-from Utils.trainUtils import *
-from dataset.DataLoader import DataLoader, DiabetesDataset
-#from tensorboardX import SummaryWriter
-
-
-# MODELs
-
-
-
-INPUT_DIM = 20
-OUTPUT_DIM = 39
-CUDA_ID = 2
-N_EPOCHS = 30
-BATCH_SIZE = 512
-
-# times = strftime("%y%m%d_%H%M%S", localtime())
-# SAVE_PATH = os.path.join(os.getcwd(), 'logdir')
-# makeFolder(SAVE_PATH)
-
-if torch.cuda.is_available():
-    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(CUDA_ID)
-    DEVICE = 'cuda'
-else:
-    DEVICE = 'cpu'
-
-class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
+class DFMNET(nn.Module):
     def __init__(self, n_input: int, n_output: int, n_lstm_layer=2, n_lstm_hidden=128, n_KDN_hidden=128, lr=0.001,
-                 n_epochs=5, batch_size=16, writer=None):
+                 n_epochs=5, batch_size=16, writer=None, device = DEVICE):
         super().__init__()
         self.n_input = n_input
         self.n_output = n_output
@@ -48,6 +18,7 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
         self.n_epochs = n_epochs
         self.batch_size = batch_size
         self.writer = writer
+        self.device = device
 
         self.n_hidden_1 = n_KDN_hidden
         self.n_hidden_2 = n_KDN_hidden
@@ -65,7 +36,7 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
         self.valid_data = False
 
         self._build_model()
-        self.to(DEVICE)
+        self.to(device)
 
         self._set_optimizer()
 
@@ -100,9 +71,6 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_normal_(m.weight.data)
 
-    def _set_optimizer(self):
-        self.criterion = nn.MSELoss()
-        self.optimizer = optim.Adam(self.parameters(), lr = self.lr)
 
     def forward(self, x):
         r, _ = self.SEN(x.transpose(1, 0))
@@ -115,11 +83,11 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
         return y
 
 
-    def fit(self, X: np.ndarray, y: np.ndarray, X_valid=None, y_valid=None):
+    def train(self, X: np.ndarray, y: np.ndarray, X_valid=None, y_valid=None):
 
         # preprocessing
-        self.train_x = torch.from_numpy(train_x).type(torch.float).to(DEVICE)
-        self.train_y = torch.from_numpy(train_y).type(torch.float).to(DEVICE)
+        self.train_x = torch.from_numpy(train_x).type(torch.float).to(self.device)
+        self.train_y = torch.from_numpy(train_y).type(torch.float).to(self.device)
 
         train_dataset_loader = torchDataLoader(dataset=DiabetesDataset(self.train_x, self.train_y),
                                                batch_size=self.batch_size,
@@ -162,32 +130,3 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
         with torch.no_grad():
             y = self(X)
         return y
-
-
-if __name__ == '__main__':
-    #writer = SummaryWriter()
-    loader = DataLoader()
-
-    dfmnet = DFMNET(INPUT_DIM, OUTPUT_DIM, batch_size=BATCH_SIZE, n_epochs=N_EPOCHS, writer=None)
-    train_x, train_y = loader.getStandardTrainDataSet()
-    dfmnet.fit(train_x, train_y)
-
-    results = dict()
-
-    for tag in loader.dataset_tags:
-        print("Test: ", tag)
-        x_data, y_data = loader.getStandardTestDataSet(tag)
-        x_data_torch = torch.from_numpy(x_data).type(torch.float).to(DEVICE)
-        pred = dfmnet.predict(x_data_torch)
-
-        results[tag] = {
-            'x_data': x_data,
-            'y_data': y_data,
-            'y_pred': pred.to('cpu').detach().numpy()
-        }
-
-    with open(os.path.join(os.getcwd(), 'Results', 'test.pick'), 'wb') as f:
-        pickle.dump(results, f)
-
-
-    #writer.close()
