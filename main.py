@@ -5,14 +5,16 @@ from torch.utils.data import DataLoader as torchDataLoader
 import numpy as np
 from tqdm import tqdm
 from sklearn.base import BaseEstimator, RegressorMixin
-from tensorboardX import SummaryWriter
+import pickle
 
 from Utils.trainUtils import *
 from dataset.DataLoader import DataLoader, DiabetesDataset
-
+from tensorboardX import SummaryWriter
 INPUT_DIM = 20
 OUTPUT_DIM = 39
 CUDA_ID = 0
+N_EPOCHS = 30
+BATCH_SIZE = 512
 
 # times = strftime("%y%m%d_%H%M%S", localtime())
 # SAVE_PATH = os.path.join(os.getcwd(), 'logdir')
@@ -158,15 +160,26 @@ if __name__ == '__main__':
     writer = SummaryWriter()
     loader = DataLoader()
 
-    dfmnet = DFMNET(INPUT_DIM, OUTPUT_DIM, writer=writer)
-
+    dfmnet = DFMNET(INPUT_DIM, OUTPUT_DIM, batch_size=BATCH_SIZE, n_epochs=N_EPOCHS, writer=writer)
     train_x, train_y = loader.getStandardTrainDataSet()
     dfmnet.fit(train_x, train_y)
+
+    results = dict()
 
     for tag in loader.dataset_tags:
         print("Test: ", tag)
         x_data, y_data = loader.getStandardTestDataSet(tag)
         x_data_torch = torch.from_numpy(x_data).type(torch.float).to(DEVICE)
         pred = dfmnet.predict(x_data_torch)
+
+        results[tag] = {
+            'x_data': x_data,
+            'y_data': y_data,
+            'y_pred': pred.to('cpu').detach().numpy()
+        }
+
+    with open(os.path.join(os.getcwd(), 'Results', 'test.pick'), 'wb') as f:
+        pickle.dump(results, f)
+
 
     writer.close()

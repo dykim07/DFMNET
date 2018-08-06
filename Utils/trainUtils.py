@@ -10,6 +10,5 @@ def makeFolder(location):
                 raise
     return 0
 
-
-def rmse(y_pred, y_gt):
-    
+#
+# def rmse(y_pred, y_gt):
