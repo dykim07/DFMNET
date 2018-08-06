@@ -14,9 +14,7 @@ class DataLoader():
         self.dataset_tags = ['BR', 'SQ', 'WM']
         self.file_names = ['BnR.mat', 'squat.mat', 'windmill.mat']
         self.dataset = dict()
-
         self.scaler = None
-
         self.load_dataset()
 
     def load_dataset(self):

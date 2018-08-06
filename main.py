@@ -10,6 +10,8 @@ import pickle
 from Utils.trainUtils import *
 from dataset.DataLoader import DataLoader, DiabetesDataset
 from tensorboardX import SummaryWriter
+
+
 INPUT_DIM = 20
 OUTPUT_DIM = 39
 CUDA_ID = 0
