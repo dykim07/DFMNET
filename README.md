@@ -70,6 +70,8 @@ As you can be seen in that figure, the fastener tightly adheres to the suit with
 * pytorch 0.4
 * tensorboardx
 
+attention model
+
 ### Trained model and test results : !! v1.0 only !!
 * pre_result/pt_model.torch
 * pre_result/*.mat
