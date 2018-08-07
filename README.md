@@ -40,6 +40,17 @@ In addition, the detail form of the fastener and its attachment result are drawn
 ![att](figs/sen_att.png)
 As you can be seen in that figure, the fastener tightly adheres to the suit within the stretchable limit of the soft sensor.
 
+
+## Accuracy (v.1.4) : RMSE
+| [mm] | Overall | SQ | BR | WM |
+|--| -- | -- | -- | -- | -- |
+|DFMNET | **27.62** | **20.13** | **24.97** | **35.48** |
+|LR1 | 55.95 | 40.95 | 45.39 | 75.20 |
+|LR1 | 45.35 | 22.89 | 27.62 | 69.87 |
+
+*MSE:  http://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_squared_error.html*
+
+
 ## release note
 
 ### v1.0 : TMECH

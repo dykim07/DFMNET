@@ -8,11 +8,10 @@ DATASET_old/
 *.mp4
 *.pyc
 *.ipynb
-<<<<<<< HEAD
+
+
+.DS*
+._.DS*
 /temp
 /temp_result
 /runs
-=======
-
->>>>>>> v1.4
-unitTest.py
