@@ -35,22 +35,23 @@ if __name__ == '__main__':
     model = MODEL(batch_size=BATCH_SIZE, n_epochs=N_EPOCHS, writer=None, device=DEVICE)
     model.to(DEVICE)
     
-    train_x, train_y = loader.getStandardTrainDataSet()
-    results = dict()
+    # train_x, train_y = loader.getStandardTrainDataSet()
+    # results = dict()
+    #
+    # for tag in loader.dataset_tags:
+    #     print("Test: ", tag)
+    #     x_data, y_data = loader.getStandardTestDataSet(tag)
+    #     x_data_torch = torch.from_numpy(x_data).type(torch.float).to(DEVICE)
+    #
+    #     results[tag] = {
+    #         'x_data': x_data,
+    #         'y_data': y_data,
+    #         'y_pred': pred.to('cpu').detach().numpy()
+    #     }
+    #
+    # with open(os.path.join(os.getcwd(), 'Results', 'atten_test.pick'), 'wb') as f:
+    #     pickle.dump(results, f)
 
-    for tag in loader.dataset_tags:
-        print("Test: ", tag)
-        x_data, y_data = loader.getStandardTestDataSet(tag)
-        x_data_torch = torch.from_numpy(x_data).type(torch.float).to(DEVICE)
-        
-        results[tag] = {
-            'x_data': x_data,
-            'y_data': y_data,
-            'y_pred': pred.to('cpu').detach().numpy()
-        }
-
-    with open(os.path.join(os.getcwd(), 'Results', 'atten_test.pick'), 'wb') as f:
-        pickle.dump(results, f)
 
 
     # def train(self, X: np.ndarray, y: np.ndarray, X_valid=None, y_valid=None):

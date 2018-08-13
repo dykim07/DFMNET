@@ -99,7 +99,6 @@ class DataLoader():
             pos = hip_position[idx]
             for marker_idx in marker_idxs:
                 outs[idx, marker_idx] = np.matmul(rtMat.T, (y_data[idx, marker_idx])) + pos
-
         return outs
 
     def getHipPosition(self, tag):
