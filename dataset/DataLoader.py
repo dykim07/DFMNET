@@ -17,6 +17,9 @@ class DataLoader():
         self.scaler = None
         self.load_dataset()
 
+    def getDataSetTags(self):
+        return self.dataset_tags
+
     def load_dataset(self):
         for idx, tag in enumerate(self.dataset_tags):
             file_name = os.getcwd() + '/dataset/' + self.file_names[idx]

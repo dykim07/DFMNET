@@ -10,6 +10,7 @@ import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 import multiprocessing
 from multiprocessing import Pool
+from sklearn.metrics import mean_squared_error
 
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -55,27 +56,24 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
         )
 
         self.KDN = nn.Sequential(
-            nn.Linear(self.n_lstm_hidden + self.n_input, self.n_KDN_hidden),
-            nn.ReLU(),
-
-            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
-            nn.ReLU(),
-
-            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
-            nn.ReLU(),
-
-            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
-            nn.ReLU(),
-
-            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
-            nn.ReLU(),
-
+            *self.block(self.n_lstm_hidden + self.n_input, self.n_KDN_hidden),
+            *self.block(self.n_KDN_hidden, self.n_KDN_hidden),
+            *self.block(self.n_KDN_hidden, self.n_KDN_hidden),
+            *self.block(self.n_KDN_hidden, self.n_KDN_hidden),
+            *self.block(self.n_KDN_hidden, self.n_KDN_hidden),
             nn.Linear(self.n_KDN_hidden, self.n_output)
         )
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 nn.init.xavier_normal_(m.weight.data)
+
+    def block(self, n_input, n_output, normalization=True):
+        layer = [nn.Linear(n_input, n_output)]
+        if normalization :
+            layer.append(nn.BatchNorm1d(n_output))
+        layer.append(nn.LeakyReLU())
+        return layer
 
 
     def forward(self, x):
@@ -140,12 +138,69 @@ class DFMNET_NA(nn.Module):
 
         return y
 
+class DFMNET_NSEN(nn.Module):
+    def __init__(self, n_input: int, n_output: int, n_lstm_layer=2, n_lstm_hidden=128, n_KDN_hidden=128, device='cuda'):
+        super().__init__()
+        self.n_input = n_input
+        self.n_output = n_output
+        self.n_lstm_layer = n_lstm_layer
+        self.n_lstm_hidden = n_lstm_hidden
+        self.n_KDN_hidden = n_KDN_hidden
+        self.device = device
+        self._build_model()
+
+    def _build_model(self):
+
+        # self.SEN = nn.LSTM(
+        #     input_size=self.n_input,
+        #     hidden_size=self.n_lstm_hidden,
+        #     num_layers=self.n_lstm_layer,
+        #     dropout=0.5
+        # )
+
+        self.KDN = nn.Sequential(
+            nn.Linear(self.n_input, self.n_KDN_hidden),
+            nn.ReLU(),
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_KDN_hidden),
+            nn.ReLU(),
+
+            nn.Linear(self.n_KDN_hidden, self.n_output)
+        )
+
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight.data)
+
+
+    def forward(self, x):
+        r = x[:, -1, :]
+        y = self.KDN(r)
+        return y
+
 
 def training():
     loader = DataLoader()
     writer = SummaryWriter()
 
-    model = DFMNET_NA(INPUT_DIM, OUTPUT_DIM)
+    model = DFMNET(INPUT_DIM, OUTPUT_DIM)
     model = model.to(DEVICE)
     criterion = nn.MSELoss()
 
@@ -176,22 +231,16 @@ def training():
     path = os.path.join(
         os.getcwd(),
         'pre_train_model',
-        'dfmnet_no_atten.pt'
+        'dfmnet_le',
+        'model.pt'
     )
     torch.save(model, path)
 
-
-
-
-
-
-
-
-def analysis():
+def analysis(base='dfmnet_n_sen'):
     path = os.path.join(
         os.getcwd(),
         'pre_train_model',
-        'dfmnet_na',
+        base,
         'model.pt'
     )
     model = torch.load(path).to('cpu').eval()
@@ -295,7 +344,7 @@ def analysis():
             input_0.append(meanit0)
             input_1.append(meanit1)
 
-        path = os.path.join(os.getcwd(), 'pre_train_model', 'dfmnet_na','lstm_view_' + str(tag) + '.pick' )
+        path = os.path.join(os.getcwd(), 'pre_train_model', base,'lstm_view_' + str(tag) + '.pick' )
         with open(path, 'wb') as f:
             pickle.dump(
                 {
@@ -488,13 +537,13 @@ class WeightViwer():
                                            interval=int(1000 / 120), blit=False)
         plt.show()
 
+
     def save(self):
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=120, metadata=dict(artist='Me'), bitrate=1800)
         line_ani = animation.FuncAnimation(self.fig, self.update, len(self.weights_dict['f0']),
                                            interval=int(1000 / 120), blit=False)
         line_ani.save(self.tag + '.mp4', writer=writer)
-
 
 
 def performaceEval(base = 'dfmnet_na'):
@@ -505,31 +554,79 @@ def performaceEval(base = 'dfmnet_na'):
         'model.pt'
     )
 
+    loader = DataLoader()
+    train_x, train_y = loader.getStandardTrainDataSet()
+    gt_array = []
+    pred_array = []
     model = torch.load(path).to('cuda')
-    # dataset =
-    # results = []
-    # for tag in
+    rmses = dict()
+    for tag in loader.getDataSetTags():
+        test_x, test_y = loader.getStandardTestDataSet(tag)
+        gt_array.append(test_y)
+        test_x = torch.from_numpy(test_x).type(torch.float).to(DEVICE)
+        y_pred = model(test_x)
+        y_pred = y_pred.to('cpu').detach().numpy()
+        pred_array.append(y_pred)
+        print(tag , " : ", np.sqrt(mean_squared_error(test_y , y_pred)))
+        rmses[tag] =  np.sqrt(mean_squared_error(test_y , y_pred))
+    g = np.concatenate(gt_array)
+    p = np.concatenate(pred_array)
+    print("all")
+    print("All: ", np.sqrt(mean_squared_error(g,p)))
+    rmes_all =  np.sqrt(mean_squared_error(g,p))
+    msg = 'RMSE'
+    msg += ' | '
+    msg += str(round(rmes_all*1000, 2))
+    msg += ' | '
+    msg += str(round(rmses['SQ']*1000, 2))
+    msg += ' | '
+    msg += str(round(rmses['BR']*1000, 2))
+    msg += ' | '
+    msg += str(round(rmses['WM']*1000, 2))
+    msg += ' | '
+
+    print(msg)
 
 
+
+    # for tag, item in results.items():
+    #     print("Test: ", tag)
+    #     y_data = item['y_data']
+    #     y_pred = item['y_pred']
+    #     print(np.sqrt(mean_squared_error(y_data, y_pred)))
+    #     gt_array.append(y_data)
+    #     pred_array.append(y_pred)
+    #
+    # g = np.concatenate(gt_array)
+    # p = np.concatenate(pred_array)
+    # print(g.shape)
+    # print(p.shape)
+    # print(np.sqrt(mean_squared_error(g,p)))
 
 def multiwriter(key):
-    viwer = WeightViwer('dfmnet_na', key)
+    viwer = WeightViwer('dfmnet_n_sen', key)
     viwer.save()
 
 
 if __name__ == '__main__':
-    n_core = multiprocessing.cpu_count() - 1
-    print("Start with ", n_core, " CPUs")
-    with Pool(n_core) as p:
-        r = list(p.imap(multiwriter, ["BR", "WM", "SQ"]))
+    training()
+    performaceEval(base='dfmnet_le')
+    # analysis()
+    # n_core = multiprocessing.cpu_count() - 1
+    # print("Start with ", n_core, " CPUs")
+    # with Pool(n_core) as p:
+    #     r = list(p.imap(multiwriter, ["BR", "WM", "SQ"]))
+    #
 
-    # viwer = WeightViwer("WM")
-    # viwer.show()
 
-    #    training()
-    #    analysis()
-    # for key in ["BR", "WM", "SQ"]:
-    #     viwer = WeightViwer('dfmnet_na', key)
-    #     viwer.save()
-
-#    viwer.show()
+#
+#     # viwer = WeightViwer("WM")
+#     # viwer.show()
+#
+#     #    training()
+#     #    analysis()
+#     # for key in ["BR", "WM", "SQ"]:
+#     #     viwer = WeightViwer('dfmnet_na', key)
+#     #     viwer.save()
+#
+# #    viwer.show()
