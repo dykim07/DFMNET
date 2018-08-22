@@ -13,7 +13,7 @@ from Utils.trainUtils import *
 from dataset.DataLoader import DataLoader, DiabetesDataset
 #from tensorboardX import SummaryWriter
 
-
+from sklearn.metrics import mean_squared_error
 # MODELs
 
 
@@ -29,8 +29,6 @@ BATCH_SIZE = 512
 # makeFolder(SAVE_PATH)
 
 if torch.cuda.is_available():
-    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(CUDA_ID)
     DEVICE = 'cuda'
 else:
     DEVICE = 'cpu'
@@ -185,6 +183,10 @@ if __name__ == '__main__':
             'y_data': y_data,
             'y_pred': pred.to('cpu').detach().numpy()
         }
+
+        print(tag, " : ", np.sqrt(mean_squared_error(y_data, pred.to('cpu').detach().numpy())))
+
+
 
     with open(os.path.join(os.getcwd(), 'Results', 'tt_test.pick'), 'wb') as f:
         pickle.dump(results, f)

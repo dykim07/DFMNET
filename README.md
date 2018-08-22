@@ -27,7 +27,6 @@ Soft sensors are becoming more popular in wearables as a means of tracking human
 * Connexions  
 ![Wire](figs/dw.png)
 
-
 ### Sensor Placement
 The where and how these sensors are important issues in our research. 
 We considered the complexity of joint motion, the correlation between the joint and muscles, and direction of the muscles fiber to decide the position and quantity of the soft sensors. For example, the trivial one-DOF joints such as the elbow ware measured only one soft sensor. However, the shoulder has more complex motions than the one-DOF joints, thus we attached multiple sensors around it. 
@@ -45,7 +44,6 @@ As you can be seen in that figure, the fastener tightly adheres to the suit with
 | [mm] | Overall | SQ | BR | WM |
 |--| -- | -- | -- | -- | -- |
 |*DFMNET* | **27.62** | **20.13** | **24.97** | **35.48** |
-| DFMNET-ER | **27.62** | **20.13** | **24.97** | **35.48** |
 
 |DFMNET w/o Residual | 33.82 | 22.38 | 27.45 | 46.66 |
 |DFMNET w/o SEN | 30.20 | 23.77 | 31.14 | 34.66 |
@@ -63,8 +61,6 @@ As you can be seen in that figure, the fastener tightly adheres to the suit with
 |LR1 | 45.35 | 22.89 | 27.62 | 69.87 |
 
 *MSE:  http://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_squared_error.html*
-
-
 ## release note
 
 ### v1.0 : TMECH
@@ -94,7 +90,7 @@ As you can be seen in that figure, the fastener tightly adheres to the suit with
 #### v1.4
 * pytorch 0.4
 * tensorboardx
-
+* sensor ordering
 attention model
 
 ### Trained model and test results : !! v1.0 only !!

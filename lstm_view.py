@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 import multiprocessing
 from multiprocessing import Pool
-from sklearn.metrics import mean_squared_error
+
 
 
 from mpl_toolkits.mplot3d import Axes3D
@@ -68,11 +68,11 @@ class DFMNET(nn.Module, BaseEstimator, RegressorMixin):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_normal_(m.weight.data)
 
-    def block(self, n_input, n_output, normalization=True):
+    def block(self, n_input, n_output, normalization=False):
         layer = [nn.Linear(n_input, n_output)]
         if normalization :
             layer.append(nn.BatchNorm1d(n_output))
-        layer.append(nn.LeakyReLU())
+        layer.append(nn.ReLU())
         return layer
 
 

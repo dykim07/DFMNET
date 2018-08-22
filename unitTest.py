@@ -47,11 +47,5 @@ def raw_loader_test():
         print(item.shape)
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
     loader = raw_loader_test()
