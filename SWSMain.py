@@ -79,18 +79,16 @@ class DFMNETAnalyzer(AnalyzerBase):
 
     def JointView(self):
         tag = 'WM'
-        self.sws[tag].relative_loss_per_joint()
+        return self.sws[tag].relative_loss_per_joint()
 
-
-
-def plotOverallBarChartForFMNET(results:dict):
+def plotOverallBarChartForFMNET(results:dict, sws:SWSVis):
     index = np.arange(0, 20)
     plt.figure(figsize=(8,8))
     plt.subplot(221)
     # overall
     all_loss = np.array([results[tag] for tag in results.keys()])
     all_loss = all_loss.sum(axis=0)
-    all_loss = all_loss / all_loss.sum()
+    all_loss = sws[list(sws.keys())[0]].OverallScaler(all_loss)
     plt.bar(index, all_loss)
     plt.xticks(index)
     plt.title('Ovarall')
@@ -101,7 +99,7 @@ def plotOverallBarChartForFMNET(results:dict):
     for idx, tag in enumerate(results.keys()):
         n_plot = '22' + str(idx+2)
         plt.subplot(n_plot)
-        loss_v = results[tag] / results[tag].sum()
+        loss_v = sws[tag].OverallScaler(results[tag])
         plt.bar(index, loss_v)
         plt.xticks(index)
         plt.title(tag)
@@ -116,10 +114,15 @@ if __name__ == '__main__':
     ana = DFMNETAnalyzer()
     ana.loadModel(path)
     ana.init()
-    #
-    # results = ana.OverAllView()
-    # plotOverallBarChartForFMNET(results)
 
-    results = ana.JointView()
-    plt.imshow(results)
-    plt.show()
+    results = ana.OverAllView()
+    plotOverallBarChartForFMNET(results, ana.sws)
+
+    # results = ana.JointView()
+    #
+    # plt.figure()
+    # plt.imshow(results, cmap=plt.cm.Blues, interpolation='nearest')
+    # plt.colorbar()
+    # plt.xticks(np.arange(20), np.arange(20))
+    # plt.yticks(np.arange(len(ana.joint_names)), ana.joint_names)
+    # plt.show()

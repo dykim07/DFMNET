@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 class SWSVis():
     def __init__(self, model:torch.nn.Module, joint_names:list):
@@ -36,9 +37,27 @@ class SWSVis():
 
     def relative_loss_per_joint(self):
         criterion = nn.MSELoss(reduction='none')
-        mse_mat = torch.zeros(self.input.size(-1), len(self.joint_names))
+        mse_mat = torch.zeros(len(self.joint_names), self.input.size(-1))
         target = self.output_target.reshape(-1, len(self.joint_names), 3)
+
+        base_lose = criterion(target, self.output_GT.reshape(-1, len(self.joint_names), 3))
+
         for idx_sensor in range(self.input.size(-1)):
             loss = criterion(self.base_predictions[idx_sensor].reshape(self.input.size(0), len(self.joint_names), 3), target)
-            mse_mat[idx_sensor, :] = loss.mean(dim=2).mean(dim=0)
+            loss = loss - base_lose
+            mse_mat[:, idx_sensor] = loss.mean(dim=2).mean(dim=0)
+
         return mse_mat.to('cpu').detach().numpy()
+
+    def JointScaler(self, dataset):
+        assert dataset.shape[0] == len(self.joint_names)
+        assert dataset.shape[1] == self.input.size(-1)
+        scaler = MinMaxScaler()
+        for joint_idx in range(dataset.shape[0]):
+            dataset[joint_idx, :] = scaler.fit_transform(dataset[joint_idx, :].reshape(-1, 1)).reshape(-1)
+        return dataset
+
+    def OverallScaler(self, dataset):
+        assert dataset.shape[0] == self.input.size(-1)
+        scaler = MinMaxScaler()
+        return scaler.fit_transform(dataset.reshape(-1, 1)).reshape(-1)
