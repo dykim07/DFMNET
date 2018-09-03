@@ -50,8 +50,8 @@ class SWSVis():
         return mse_mat.to('cpu').detach().numpy()
 
     def JointScaler(self, dataset):
-        assert dataset.shape[0] == len(self.joint_names)
-        assert dataset.shape[1] == self.input.size(-1)
+        #assert dataset.shape[0] == len(self.joint_names)
+#        assert dataset.shape[1] == self.input.size(-1)
         scaler = MinMaxScaler()
         for joint_idx in range(dataset.shape[0]):
             dataset[joint_idx, :] = scaler.fit_transform(dataset[joint_idx, :].reshape(-1, 1)).reshape(-1)
@@ -61,3 +61,6 @@ class SWSVis():
         assert dataset.shape[0] == self.input.size(-1)
         scaler = MinMaxScaler()
         return scaler.fit_transform(dataset.reshape(-1, 1)).reshape(-1)
+
+    def InterpretableModel(self):
+        pass

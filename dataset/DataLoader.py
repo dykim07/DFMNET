@@ -10,8 +10,8 @@ from torch.utils.data import Dataset as torchDataset
 from sklearn.preprocessing import StandardScaler
 
 class DataLoader():
-    def __init__(self, window_size=120):
-        self.window_size = window_size
+    def __init__(self):
+        self.window_size = 120 # default value
         self.dataset_tags = ['BR', 'SQ', 'WM']
         #self.file_names = ['BnR.mat', 'squat.mat', 'windmill.mat']
 
@@ -57,7 +57,9 @@ class DataLoader():
             y_data.append(data['train_y'])
         return np.concatenate(x_data, 0), np.concatenate(y_data, 0)
 
-    def getStandardTrainDataSet(self):
+
+
+    def getStandardTrainDataSetBase(self):
         self.scaler = StandardScaler()
 
         x_data = []
@@ -65,19 +67,25 @@ class DataLoader():
 
         for tag, data in self.dataset.items():
             x_data.append(data['train_x'])
-            y_data.append(data['train_y'])
 
         self.scaler.fit(np.concatenate(x_data, 0))
 
-        x_data = []
+        x_data = dict()
+        y_data = dict()
 
         for tag, data in self.dataset.items():
             x = self.scaler.transform(data['train_x'])
             x = self.generateWindow(x, self.window_size)
 
-            x_data.append(x)
+            x_data[tag] = x
+            y_data[tag] = data['train_y']
 
-        return np.concatenate(x_data, 0), np.concatenate(y_data, 0)
+        return x_data, y_data
+
+    def getStandardTrainDataSet(self):
+        x_data, y_data = self.getStandardTrainDataSetBase()
+        return np.concatenate([item for key, item in x_data.items()], 0), \
+        np.concatenate([item for key, item in y_data.items()], 0)
 
     def getStandardTestDataSet(self, tag):
         if self.scaler is None:
@@ -88,7 +96,6 @@ class DataLoader():
 
         x_data = self.dataset[tag]['test_x']
         y_data = self.dataset[tag]['test_y']
-
         x_data = self.scaler.transform(x_data)
 
         return self.generateWindow(x_data, self.window_size), y_data
