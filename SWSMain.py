@@ -72,7 +72,7 @@ class DFMNETAnalyzer(AnalyzerBase):
         return results
 
 def plotOverallBarChartForFMNET(results:dict, sws:SWSVis):
-    index = np.arange(0, 20)
+    index = np.arange(0, 20)  + 1
     plt.figure(figsize=(8,8))
     plt.subplot(221)
     # overall
@@ -81,19 +81,21 @@ def plotOverallBarChartForFMNET(results:dict, sws:SWSVis):
     all_loss = sws[list(sws.keys())[0]].OverallScaler(all_loss)
     plt.bar(index, all_loss)
     plt.xticks(index)
-    plt.title('Ovarall')
+    plt.title('(a)', loc='left')
     plt.grid()
     plt.xlabel('sensor index')
     plt.ylabel('ratio')
+    keys = ["SQ", 'BR', 'WM']
+    titles = ['(b)', '(c)', '(d)']
 
-    for idx, tag in enumerate(results.keys()):
+    for idx, tag in enumerate(keys):
         n_plot = '22' + str(idx+2)
         plt.subplot(n_plot)
         loss_v = results[tag]
         loss_v = sws[list(sws.keys())[0]].OverallScaler(loss_v)
         plt.bar(index, loss_v)
         plt.xticks(index)
-        plt.title(tag)
+        plt.title(titles, loc='left')
         plt.grid()
         plt.xlabel('sensor index')
         plt.ylabel('ratio')
@@ -101,25 +103,30 @@ def plotOverallBarChartForFMNET(results:dict, sws:SWSVis):
     plt.show()
 
 def plotJointEffectForDFMNET(ana, results, joint_names):
-    plt.figure()
+    plt.figure(figsize=(14, 8))
+
+    keys = ["SQ", 'BR', 'WM']
+    titles = ['(b)', '(c)', '(d)']
+    ax_list = ['222', '223', '224']
 
     overAll = np.zeros_like(results[ana.dataLoader.getDataSetTags()[0]])
     print(overAll.shape)
-    for tag, plt_tag in zip(ana.dataLoader.getDataSetTags(),['222', '223', '224']) :
-        overAll = overAll + results[tag]
-        plt.subplot(plt_tag)
-        plt.title(tag)
-        plt.imshow(ana.sws[tag].JointScaler(results[tag]), cmap=plt.cm.Blues, interpolation='nearest')
-        plt.xticks(np.arange(overAll.shape[1]), np.arange(overAll.shape[1]))
+    for idx in range(3):
+        overAll = overAll + results[keys[idx]]
+        plt.subplot(ax_list[idx])
+        plt.title(titles[idx], loc='left')
+        plt.imshow(ana.sws[keys[idx]].JointScaler(results[keys[idx]]), cmap=plt.cm.Blues, interpolation='nearest')
+        plt.xticks(np.arange(overAll.shape[1]), np.arange(overAll.shape[1])+1)
         plt.yticks(np.arange(len(joint_names)), joint_names)
         plt.colorbar()
-
     plt.subplot(221)
-    plt.title("Overall")
-    plt.imshow(ana.sws[tag].JointScaler(overAll), cmap=plt.cm.Blues, interpolation='nearest')
-    plt.colorbar()
-    plt.xticks(np.arange(overAll.shape[1]), np.arange(overAll.shape[1]))
+    plt.title('(a)', loc='left')
+    plt.imshow(ana.sws["SQ"].JointScaler(overAll), cmap=plt.cm.Blues, interpolation='nearest')
+    plt.xticks(np.arange(overAll.shape[1]), np.arange(overAll.shape[1])+1)
     plt.yticks(np.arange(len(joint_names)), joint_names)
+
+    plt.colorbar()
+    plt.tight_layout()
     plt.show()
 
 def plotJointEffectForDFMNETUpperBody(ana, results, joint_names):
@@ -143,28 +150,12 @@ def plotJointEffectForDFMNETUpperBody(ana, results, joint_names):
     plt.yticks(np.arange(9), joint_names[:9])
     plt.show()
 
+
+
 if __name__ == '__main__':
     path = os.path.join(os.getcwd(), 'pre_train_model', 'dfmnet_for_vis', 'model.pt')
     ana = DFMNETAnalyzer()
     ana.loadModel(path)
     ana.init()
     results = ana.JointView()
-    plotJointEffectForDFMNETUpperBody(ana, results, ana.joint_names)
-
-
-
-    # results = ana.OverAllView()
-    # plotOverallBarChartForFMNET(results, ana.sws)
-    # results = ana.JointView()
-
-    # results = ana.JointView()
-    # print(results)
-
-    # for k, item in results.items():
-    #     np.savetxt(k + '.csv', item, delimiter=',')
-    # plt.figure()
-    # plt.imshow(results, cmap=plt.cm.Blues, interpolation='nearest')
-    # plt.colorbar()
-    # plt.xticks(np.arange(20), np.arange(20))
-    # plt.yticks(np.arange(len(ana.joint_names)), ana.joint_names)
-    # plt.show()
+    plotJointEffectForDFMNET(ana, results, ana.joint_names)

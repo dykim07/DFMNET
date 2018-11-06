@@ -87,7 +87,6 @@ class SWSVis():
         # load dataset
         self.loadDataSet()
         self.criterion = nn.MSELoss()
-
         self.setBasePredictionResults()
 
         # 13 joints
@@ -181,11 +180,12 @@ def overall():
     loss = dict()
 
     tags = ['SQ', 'BR', 'WM']
+    titles = ['(b)', '(c)', '(d)']
     for tag in tags:
         loss[tag] = np.array([vis.zero_sensor_all(idx, tag) for idx in range(20)])
 
-    index = np.arange(0, 20)
-    plt.figure(figsize=(8,8))
+    index = np.arange(0, 20) + 1
+    plt.figure(figsize=(14,8))
     plt.subplot(221)
     # overall
     all_loss = np.array([loss[tag] for tag in tags ])
@@ -193,7 +193,7 @@ def overall():
     all_loss = all_loss / all_loss.sum()
     plt.bar(index, all_loss)
     plt.xticks(index)
-    plt.title('Ovarall')
+    plt.title('(a)', loc='left')
     plt.grid()
     plt.xlabel('sensor index')
     plt.ylabel('ratio')
@@ -205,7 +205,7 @@ def overall():
         loss_v = loss[tag] / loss[tag].sum()
         plt.bar(index, loss_v)
         plt.xticks(index)
-        plt.title(tag)
+        plt.title(titles[idx], loc='left')
         plt.grid()
         plt.xlabel('sensor index')
         plt.ylabel('ratio')
