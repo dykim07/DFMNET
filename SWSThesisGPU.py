@@ -81,15 +81,6 @@ class DFMNETSWS():
         
         normal_prediction = self.predict(test_x_torch)
         
-        zero_MSEs = []
-        for pred in zero_predictions:
-            MSEs.append(self.MSETime(pred, test_y))
-
-        normal_MSEs = []
-        for pred in normal_prediction:
-            MSEs.append(self.MSETime(pred, test_y))
-
-
         save_path = os.path.join(
             'pre_train_model',
             'dfmnet_for_vis',
@@ -101,7 +92,6 @@ class DFMNETSWS():
                 'test_y' : test_y,
                 'zero_predictions': zero_predictions,
                 'normal_predictions': normal_prediction,
-                'zero_mse': MSEs
             },f )
 
     def MSETime(self, pred:np.ndarray, target:np.ndarray ):
