@@ -72,16 +72,23 @@ class DFMNETSWS():
         test_x, test_y = self.dataloader.getStandardTestDataSet(tag)
         test_x_torch = torch.from_numpy(test_x).type(torch.float).to(DEVICE)
 
-        predictions = []
-
+        zero_predictions = []
+        
         for sensor_idx in range(self.n_sensors):
-            predictions.append(
+            zero_predictions.append(
                 self.prediction_of_zero_sensor(test_x_torch, sensor_idx)
             )
-
-        MSEs = []
-        for pred in predictions:
+        
+        normal_prediction = self.predict(test_x_torch)
+        
+        zero_MSEs = []
+        for pred in zero_predictions:
             MSEs.append(self.MSETime(pred, test_y))
+
+        normal_MSEs = []
+        for pred in normal_prediction:
+            MSEs.append(self.MSETime(pred, test_y))
+
 
         save_path = os.path.join(
             'pre_train_model',
@@ -92,8 +99,9 @@ class DFMNETSWS():
         with open(save_path, 'wb') as f:
             pickle.dump({
                 'test_y' : test_y,
-                'predictions': predictions,
-                'MSEs': MSEs
+                'zero_predictions': zero_predictions,
+                'normal_predictions': normal_prediction,
+                'zero_mse': MSEs
             },f )
 
     def MSETime(self, pred:np.ndarray, target:np.ndarray ):
@@ -122,6 +130,7 @@ class DFMNETSWS():
 if __name__ == '__main__':
     sws = DFMNETSWS()
     sws.testTag('WM')
-    sws.testTag('BR')
+    sws.testTag('BR')    
+    sws.testTag('SQ')
 
 

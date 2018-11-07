@@ -1,9 +1,12 @@
 import pickle
 import os
+import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np 
 import matplotlib.gridspec as gridspec
 from matplotlib import animation
+
+import numpy as np 
+
 
 class SWSVisualizer():
     def __init__(self, tag:str):
@@ -22,6 +25,7 @@ class SWSVisualizer():
 
         self.predictions = results['predictions']
         self.MSEs = results['MSEs'] 
+
         self.test_y = results['test_y']
 
         self.MSEs = np.vstack(self.MSEs).T
@@ -37,15 +41,17 @@ class SWSVisualizer():
         ax1.grid()
         ax1.set_ylabel("Effect")
         ax1.set_xlabel("Sensor ID")
+        ax1.set_ylim([0, 0.5])
 
-    def update(self, num:int):
-        self.barchart.set_hight(self.MSEs[num, :])
-        print(num)
-
+    def update(self, num):
+        mses = self.MSEs[num, :]
+        mses = mses / np.sum(mses)
+        for idx, chart in enumerate(self.barchart):
+            chart.set_height(mses[idx])
+  
     def show(self):
-        animation.FuncAnimation(self.fig, self.update, self.n_frame, interval=20, blit=False)
+        ani = animation.FuncAnimation(self.fig, self.update, self.n_frame, interval=20, blit=False)
         plt.show()
-        
 
 if __name__ == '__main__':
     vis = SWSVisualizer('SQ')
