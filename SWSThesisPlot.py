@@ -23,15 +23,36 @@ class SWSVisualizer():
         with open(save_path, 'rb') as f:
             results = pickle.load(f)
 
-        self.predictions = results['predictions']
-        self.MSEs = results['MSEs'] 
-
+        self.zero_predictions = results['zero_predictions']
+        self.normal_predictions = results['normal_predictions']
         self.test_y = results['test_y']
 
-        self.MSEs = np.vstack(self.MSEs).T
+        self.time_zero_mse = self.MSETime(self.zero_predictions, self.test_y)
+        self.time_normal_mse = self.MSETime(self.normal_predictions, self.test_y)
+
+
+        print(self.time_normal_mse.shape)
+        print(self.time_zero_mse.shape)
+        
+        
         self.index = np.arange(0, 20)  + 1
         self.n_frame = 1000
-        self.initDraw()
+#        self.initDraw()
+
+
+    def MSETime(self, pred:np.ndarray, target:np.ndarray ):
+        """
+        dataset shape : N by Dim 
+        output = N by MSE
+        """
+        assert pred.shape == target.shape
+
+        r = pred - target
+        r = np.power(r, 2)
+        r = np.mean(r, axis=1)
+        return r
+
+
 
     def initDraw(self):
         self.fig = plt.figure()
@@ -55,4 +76,3 @@ class SWSVisualizer():
 
 if __name__ == '__main__':
     vis = SWSVisualizer('SQ')
-    vis.show()
