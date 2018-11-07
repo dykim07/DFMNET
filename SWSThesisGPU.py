@@ -79,7 +79,7 @@ class DFMNETSWS():
                 self.prediction_of_zero_sensor(test_x_torch, sensor_idx)
             )
         
-        normal_prediction = self.predict(test_x_torch)
+        normal_prediction = self.predict(test_x_torch).detach().to('cpu').numpy()
         
         save_path = os.path.join(
             'pre_train_model',
