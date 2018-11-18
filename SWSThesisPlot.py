@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 
 
 
+
 class SWSVisualizer():
     def __init__(self, tag:str):
         self.tag = tag
@@ -150,13 +151,37 @@ class SWSVisualizer():
         line_ani = animation.FuncAnimation(self.fig, self.update, self.n_frame, interval=20, blit=False)
         line_ani.save(fileName, writer=writer)
 
+
+
+class SWSPlots():
+    def __init__(self):
+        self.tags = ['SQ', 'BR', "WM"]
+        self.datasets = dict()
+        for tag in self.tags:
+            self.datasets[tag] = self.loadResults(tag)
+
+    def loadResults(self, tag:str):
+        save_path = os.path.join(
+            'pre_train_model',
+            'dfmnet_for_vis',
+            tag + '_sensor_test_result.pick'
+        )
+        with open(save_path, 'rb') as f:
+            results = pickle.load(f)
+        # self.zero_predictions = results['zero_predictions']
+        # self.normal_predictions = results['normal_predictions']
+        # self.test_y = results['test_y']
+        return results
+
+    def GapsAll(self, tag:str):
+        self.zero_predictions = self.datasets['zero_predictions']
+        self.normal_predictions = self.datasets['normal_predictions']
+        self.test_y = self.datasets['test_y']
+
+    def PlotAllGaps(self):
+        # preprocessing
+        pass
+
+
 if __name__ == '__main__':
-    vis = SWSVisualizer('WM')
-    vis.save()
-
-    vis = SWSVisualizer('SQ')
-    vis.save()
-    
-    vis = SWSVisualizer('BR')
-    vis.save()
-
+    sws = SWSPlots()
