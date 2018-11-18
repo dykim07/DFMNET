@@ -33,7 +33,7 @@ class SWSVisualizer():
         self.time_zero_mse = np.vstack(self.time_zero_mse).T
         self.time_normal_mse = self.MSETime(self.normal_predictions, self.test_y).reshape(-1, 1)
 
-        self.gab = np.abs(self.time_normal_mse - self.time_zero_mse)
+        self.gap = np.abs(self.time_normal_mse - self.time_zero_mse)
 
         self.index = np.arange(0, 20)  + 1
         self.n_frame = 1000
@@ -103,7 +103,7 @@ class SWSVisualizer():
         self.ax_sensor.grid()
         self.ax_sensor.set_ylabel("Effect")
         self.ax_sensor.set_xlabel("Sensor ID")
-        self.ax_sensor.set_ylim([0, 1])
+        self.ax_sensor.set_ylim([0, 0.6])
         self.fig.tight_layout()
         
     def update(self, num):
@@ -120,11 +120,16 @@ class SWSVisualizer():
             )
 
         # sensor
-        mses = self.gab[num, :]
-        mses = mses / np.sum(mses)
+
+        mses = self.gap[num, :]
+        # bug 계산 실수!!!
+        # mses = mses / (np.max(mses)-np.min(mses))
+        mses = np.abs(mses) / np.sum(mses)
+       
         for idx, chart in enumerate(self.barchart):
             chart.set_height(mses[idx])
-  
+
+
     def show(self):
         ani = animation.FuncAnimation(self.fig, self.update, self.n_frame, interval=20, blit=False)
         plt.show()
@@ -154,3 +159,4 @@ if __name__ == '__main__':
     
     vis = SWSVisualizer('BR')
     vis.save()
+
