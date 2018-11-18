@@ -79,15 +79,9 @@ class DFMNETSWS():
                 self.prediction_of_zero_sensor(test_x_torch, sensor_idx)
             )
 
-<<<<<<< Updated upstream:SWSThesisGPU.py
         MSEs = []
         for pred in predictions:
             MSEs.append(self.MSETime(pred, test_y))
-=======
-    def MSETime(self, pred:np.ndarray, target:np.ndarray ):
-        assert pred.shape == target.shape
-
->>>>>>> Stashed changes:SWSThesis.py
 
         save_path = os.path.join(
             'pre_train_model',
