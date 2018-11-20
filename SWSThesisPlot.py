@@ -7,6 +7,7 @@ from matplotlib import animation
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 
 
+from sklearn.metrics import mean_squared_error as MSE
 
 
 class SWSVisualizer():
@@ -25,7 +26,7 @@ class SWSVisualizer():
             results = pickle.load(f)
 
         self.zero_predictions = results['zero_predictions']
-        self.normal_predictions = results['normal_predictions']
+        self.normal_predictions = results['normal_prediction']
         self.test_y = results['test_y']
 
         self.time_zero_mse = []
@@ -160,10 +161,11 @@ class SWSPlots():
         for tag in self.tags:
             self.datasets[tag] = self.loadResults(tag)
 
+
     def loadResults(self, tag:str):
         save_path = os.path.join(
-            'pre_train_model',
-            'dfmnet_for_vis',
+            'Results',
+            'for_vis',
             tag + '_sensor_test_result.pick'
         )
         with open(save_path, 'rb') as f:
@@ -173,15 +175,59 @@ class SWSPlots():
         # self.test_y = results['test_y']
         return results
 
-    def GapsAll(self, tag:str):
-        self.zero_predictions = self.datasets['zero_predictions']
-        self.normal_predictions = self.datasets['normal_predictions']
-        self.test_y = self.datasets['test_y']
+    def GapsTag(self, tag:str):
+        self.zero_predictions = self.datasets[tag]['zero_predictions']
+        self.normal_predictions = self.datasets[tag]['normal_prediction']
+        self.test_y = self.datasets[tag]['test_y']
+        rmse_normal = np.sqrt(MSE(self.normal_predictions, self.test_y )) * 1000
+
+        effects = []
+        for idx, zero_prediction in enumerate(self.zero_predictions):
+            rmse_zero = np.sqrt(MSE(zero_prediction, self.test_y)) * 1000
+            eff = rmse_zero - rmse_normal
+            effects.append(eff)
+        return np.array(effects)
+
 
     def PlotAllGaps(self):
         # preprocessing
-        pass
+
+        gaps_dict = dict()
+        for tag in self.tags:
+            gaps_dict[tag] =  self.GapsTag(tag)
+
+        gaps_all = np.array([item for key, item in gaps_dict.items()]).mean(axis=0)
+
+        index = np.arange(0, 20)
+        plt.figure(figsize=(8,8))
+        plt.subplot(221)
+        # overall
+
+        plt.bar(index, gaps_all)
+        plt.xticks(index)
+        plt.title('(a)', loc='left')
+        plt.grid()
+        plt.xlabel('Sensor index')
+        plt.ylabel('Effect [mm]')
+        keys = ["SQ", 'BR', 'WM']
+        titles = ['(b)', '(c)', '(d)']
+
+        for idx, tag in enumerate(keys):
+            n_plot = '22' + str(idx+2)
+            plt.subplot(n_plot)
+            loss_v = gaps_dict[tag]
+            plt.bar(index, loss_v)
+            plt.xticks(index)
+            plt.title(titles[idx], loc='left')
+            plt.grid()
+            plt.xlabel('Sensor index')
+            plt.ylabel('Effect [mm]')
+        plt.tight_layout()
+        plt.show()
+
+
 
 
 if __name__ == '__main__':
     sws = SWSPlots()
+    sws.PlotAllGaps()

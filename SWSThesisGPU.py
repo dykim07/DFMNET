@@ -17,7 +17,7 @@ from dataset.DataLoader import DataLoader, DiabetesDataset
 from Models.DFMNET import DFMNET as MODEL
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--cuda_id', type=int, default = 1)
+parser.add_argument('--cuda_id', type=int, default = 0)
 args = parser.parse_args()
 
 if torch.cuda.is_available():
@@ -79,8 +79,8 @@ class DFMNETSWS():
             )
         normal_prediction = self.predict(test_x_torch).detach().to('cpu').numpy()        
         save_path = os.path.join(
-            'pre_train_model',
-            'dfmnet_for_vis',
+            'Results',
+            'for_vis',
             tag + '_sensor_test_result.pick'
         )
 
@@ -88,7 +88,7 @@ class DFMNETSWS():
             pickle.dump({
                 'test_y' : test_y,
                 'zero_predictions': zero_predictions,
-                'normal_predictions': normal_prediction,
+                'normal_prediction': normal_prediction,
             },f )
 
     def MSETime(self, pred:np.ndarray, target:np.ndarray ):

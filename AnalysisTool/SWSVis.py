@@ -33,7 +33,7 @@ class SWSVis():
     def relative_loss_for_all(self):
         loss_target = self.criterion(self.output_target, self.output_GT).item()
         loss_pred = np.array([self.criterion(pred, self.output_GT).item() for pred in self.base_predictions])
-        return  loss_pred - loss_target
+        return  np.sqrt(loss_pred) - np.sqrt(loss_target)
 
     def relative_loss_per_joint(self):
         criterion = nn.MSELoss(reduction='none')
@@ -44,7 +44,7 @@ class SWSVis():
 
         for idx_sensor in range(self.input.size(-1)):
             loss = criterion(self.base_predictions[idx_sensor].reshape(self.input.size(0), len(self.joint_names), 3), target)
-            loss = loss - base_lose
+            loss = loss.sqrt() - base_lose.sqrt()
             mse_mat[:, idx_sensor] = loss.mean(dim=2).mean(dim=0)
 
         return mse_mat.to('cpu').detach().numpy()

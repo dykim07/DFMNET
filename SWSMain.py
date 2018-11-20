@@ -78,7 +78,7 @@ def plotOverallBarChartForFMNET(results:dict, sws:SWSVis):
     # overall
     all_loss = np.array([results[tag] for tag in results.keys()])
     all_loss = all_loss.sum(axis=0)
-    all_loss = sws[list(sws.keys())[0]].OverallScaler(all_loss)
+    #all_loss = sws[list(sws.keys())[0]].OverallScaler(all_loss)
     plt.bar(index, all_loss)
     plt.xticks(index)
     plt.title('(a)', loc='left')
@@ -150,12 +150,14 @@ def plotJointEffectForDFMNETUpperBody(ana, results, joint_names):
     plt.yticks(np.arange(9), joint_names[:9])
     plt.show()
 
-
-
 if __name__ == '__main__':
     path = os.path.join(os.getcwd(), 'pre_train_model', 'dfmnet_for_vis', 'model.pt')
     ana = DFMNETAnalyzer()
     ana.loadModel(path)
     ana.init()
-    results = ana.JointView()
-    plotJointEffectForDFMNET(ana, results, ana.joint_names)
+
+    results = ana.OverAllView()
+    plotOverallBarChartForFMNET(results, ana)
+
+    # results = ana.JointView()
+    # plotJointEffectForDFMNET(ana, results, ana.joint_names)
